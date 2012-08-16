@@ -1,0 +1,26 @@
+{
+  "product": "net.evalcode.components",
+  "package": "db",
+  "description": "Database Abstraction & Tools",
+  "version": "0.1",
+  "vendor": "evalcode.net",
+
+  "layout":
+  {
+    "namespace": "Components",
+    "sources": "source",
+    "tests": "test"
+  },
+
+  "requires":
+  {
+    "runtime": "latest",
+    "type": "latest"
+  },
+
+  "repository":
+  {
+    "remote-location": "http://www.evalcode.net/components/",
+    "remote-layout": "${product}.${package}-${version}"
+  }
+}
