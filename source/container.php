@@ -33,15 +33,11 @@ namespace Components;
    * @copyright Copyright (C) 2012 evalcode.net
    * @license GNU General Public License 3
    */
-  class Container
+  class Container implements View
   {
     // PREDEFINED PROPERTIES
-    const ORDER_ASC='ASC';
-    const ORDER_DESC='DESC';
-    const ORDER_DEFAULT=self::ORDER_ASC;
-
+    const ORDER_DEFAULT=Query::ORDER_ASC;
     const PRIMARY_KEY_DEFAULT='id';
-
     const TYPE_RECORD_DEFAULT='\Components\Record';
     //--------------------------------------------------------------------------
 
@@ -130,7 +126,7 @@ namespace Components;
         if(false===isset(self::$m_containerTypesByTable[$name_])
           || false===@class_exists($containerType=self::$m_containerTypesByTable[$name_]))
         {
-          throw new Exception_illegalState('components/container', sprintf(
+          throw new Exception_illegalState('components/db/container', sprintf(
             'Unknown container requested [%1$s].', $name_
           ));
         }
@@ -147,86 +143,34 @@ namespace Components;
 
     // ACCESSORS/MUTATORS
     /**
-     * @return \Components\Container
-     */
-    public function container()
-    {
-      return $this;
-    }
-
-    /**
      * @param array $conditions_
      *
      * @return \Components\View
      */
-    public function view(array $conditions_=null)
+    public function view(array $conditions_=array())
     {
       return new Container_View($this, $conditions_);
     }
 
     /**
-     * @param array $conditions_
+     * @param mixed $value_
      *
-     * @return int
+     * @return string
      */
-    public function count(array $conditions_=null)
+    public function escape($value_)
     {
-      return $this->container()->countImpl($conditions_);
+      // TODO Delegate to connection/driver/backend ...
+
+      return $value_;
     }
 
     /**
-     * @param array $conditions_
-     *
-     * @return array|\Components\Record
-     */
-    public function find(array $conditions_=null)
-    {
-      return $this->container()->findImpl($conditions_);
-    }
-
-    /**
-     * @param array $conditions_
-     *
-     * @return \Components\Record
-     */
-    public function findFirst(array $conditions_=null)
-    {
-      return $this->container()->findFirstImpl($conditions_);
-    }
-
-    /**
-     * @param mixed $primaryKey_
-     *
-     * @return \Components\Record
-     */
-    public function findByPk($primaryKey_)
-    {
-      return $this->container()->findByPkImpl($primaryKey_);
-    }
-
-    /**
-     * @param \Components\Record $record_
-     */
-    public function save(Record $record_)
-    {
-      return $this->container()->saveImpl($record_);
-    }
-
-    /**
-     * @param \Components\Record $record_
-     */
-    public function delete(Record $record_)
-    {
-      return $this->container()->deleteImpl($record_);
-    }
-
-    /**
-     * @param \Components\Record $record_
+     * @param Record $record_
      * @param mixed $primaryKey_
      */
     public function refresh(Record $record_, $primaryKey_=null)
     {
-      return $this->container()->refreshImpl($record_, $primaryKey_);
+      // TODO Implement ...
     }
 
     /**
@@ -236,8 +180,8 @@ namespace Components;
      */
     public function registerReference($name_, $referenceContainerType_, $referenceColumnName_)
     {
-      $this->container()->m_referenceColumnNames[$name_]=$referenceColumnName_;
-      $this->container()->m_referenceContainerTypes[$name_]=$referenceContainerType_;
+      $this->m_referenceColumnNames[$name_]=$referenceColumnName_;
+      $this->m_referenceContainerTypes[$name_]=$referenceContainerType_;
     }
 
     /**
@@ -247,31 +191,72 @@ namespace Components;
      */
     public function registerForeignKey($name_, $foreignKeyContainerType_, $foreignKeyColumnName_)
     {
-      $this->container()->m_foreignKeyColumnNames[$name_]=$foreignKeyColumnName_;
-      $this->container()->m_foreignKeyContainerTypes[$name_]=$foreignKeyContainerType_;
+      $this->m_foreignKeyColumnNames[$name_]=$foreignKeyColumnName_;
+      $this->m_foreignKeyContainerTypes[$name_]=$foreignKeyContainerType_;
     }
     //--------------------------------------------------------------------------
 
 
     // OVERRIDES/IMPLEMENTS
+    public function container()
+    {
+      return $this;
+    }
+
+    public function count(array $conditions_=array())
+    {
+      // TODO Implement ...
+
+      return 0;
+    }
+
+    public function find(array $conditions_=array())
+    {
+      // TODO Implement ...
+
+      return array();
+    }
+
+    public function findFirst(array $conditions_=array())
+    {
+      // TODO Implement ...
+
+      return null;
+    }
+
+    public function findByPk($primaryKey_)
+    {
+      // TODO Implement ...
+    }
+
+    public function save(Record $record_)
+    {
+      // TODO Implement ...
+    }
+
+    public function delete(Record $record_)
+    {
+      // TODO Implement ...
+    }
+
     public function __call($name_, array $args_=array())
     {
-      if(isset($this->container()->m_referenceContainerTypes[$name_]))
+      if(isset($this->m_referenceContainerTypes[$name_]))
       {
-        $referenceContainerType=$this->container()->m_referenceContainerTypes[$name_];
+        $referenceContainerType=$this->m_referenceContainerTypes[$name_];
 
         return $referenceContainerType::get()->findByPk(
-          reset($args_)->{$this->container()->m_referenceColumnNames[$name_]}
+          reset($args_)->{$this->m_referenceColumnNames[$name_]}
         );
       }
 
-      if(isset($this->container()->m_foreignKeyContainerTypes[$name_]))
+      if(isset($this->m_foreignKeyContainerTypes[$name_]))
       {
-        $foreignKeyContainerType=$this->container()->m_foreignKeyContainerTypes[$name_];
+        $foreignKeyContainerType=$this->m_foreignKeyContainerTypes[$name_];
 
         return $foreignKeyContainerType::get()->view(array(
           'select'=>array(
-            $this->container()->m_foreignKeyColumnNames[$name_].' = ?',
+            $this->m_foreignKeyColumnNames[$name_].' = ?',
               reset($args_)->primaryKeyValue()
           )
         ));
@@ -285,161 +270,10 @@ namespace Components;
     protected static $m_containersByType=array();
     protected static $m_containerTypesByTable=array();
 
-    private static $m_queryStringSegmentProcessors=array(
-      'groupby'=>'buildQueryStringGroupBy',
-      'having'=>'buildQueryStringHaving',
-      'limit'=>'buildQueryStringLimit',
-      'orderby'=>'buildQueryStringOrderBy',
-      'select'=>'buildQueryStringSelect'
-    );
-
     private $m_foreignKeyColumnNames=array();
     private $m_foreignKeyTableNames=array();
     private $m_referenceColumnNames=array();
     private $m_referenceTableNames=array();
-    //-----
-
-
-    /**
-     * @param array $conditions_
-     *
-     * @return int
-     */
-    protected function countImpl(array $conditions_=null)
-    {
-      // TODO Implement ...
-
-      return 0;
-    }
-
-    /**
-     * @param array $conditions_
-     *
-     * @return array|\Components\Record
-     */
-    protected function findImpl(array $conditions_=null)
-    {
-      // TODO Implement ...
-
-      return array();
-    }
-
-    /**
-     * @param array $conditions_
-     *
-     * @return \Components\Record
-     */
-    protected function findFirstImpl(array $conditions_=null)
-    {
-      // TODO Implement ...
-
-      return null;
-    }
-
-    /**
-     * @param mixed $primaryKey_
-     *
-     * @return \Components\Record
-     */
-    protected function findByPkImpl($primaryKey_)
-    {
-      // TODO Implement ...
-    }
-
-    /**
-     * @param \Components\Record $record_
-     */
-    protected function saveImpl(Record $record_)
-    {
-      // TODO Implement ...
-    }
-
-    /**
-     * @param \Components\Record $record_
-     */
-    protected function deleteImpl(Record $record_)
-    {
-      // TODO Implement ...
-    }
-
-    /**
-     * @param \Components\Record $record_
-     * @param mixed $primaryKey_
-     */
-    protected function refreshImpl(Record $record_, $primaryKey_=null)
-    {
-      // TODO Implement ...
-    }
-
-    protected function buildQueryString(array $conditions_)
-    {
-      $conditions=array();
-      foreach($conditions_ as $segmentType=>$segment)
-        $conditions[$segmentType]=static::{self::$m_queryStringSegmentProcessors[strtolower($segmentType)]}($segment);
-
-      if(isset($conditions['select']))
-        array_unshift($conditions, 'WHERE');
-
-      return implode(' ', $conditions);
-    }
-
-    protected function buildQueryStringSelect($condition_)
-    {
-      $statement=array_shift($condition_);
-
-      $arguments=array();
-      foreach($condition_ as $argument)
-      {
-        if(false===($pos=strpos($statement, '?')))
-        {
-          throw new Exception_IllegalArgument('components/container',
-            'Query statement placeholder<>argument mismatch.'
-          );
-        }
-
-        $statement=
-          substr($statement, 0, $pos).
-          '\''.
-          $this->escape($argument).
-          '\''.
-          substr($statement, $pos+1);
-      }
-
-      return $statement;
-    }
-
-    protected function buildQueryStringLimit($limit_)
-    {
-      return sprintf('LIMIT %1$d', (int)$limit_);
-    }
-
-    protected function buildQueryStringOrderBy($orderBy_)
-    {
-      $order=static::ORDER_DEFAULT;
-      if(false!==($pos=strpos($orderBy_, 'ASC')))
-      {
-        $orderBy_=trim(substr($orderBy_, 0, $pos));
-      }
-      else if(false!==($pos=strpos($orderBy_, 'DESC')))
-      {
-        $orderBy_=trim(substr($orderBy_, 0, $pos));
-        $order='DESC';
-      }
-
-      // TODO Validate columns...
-      $columns=array();
-      foreach(explode(',', $orderBy_) as $column)
-        $columns[$column=trim($column)]=$column;
-
-      return sprintf('ORDER BY %1$s %2$s', implode(',', $columns), $order);
-    }
-
-    protected function escape($value_)
-    {
-      // TODO Delegate ...
-
-      return $value_;
-    }
     //--------------------------------------------------------------------------
   }
 ?>

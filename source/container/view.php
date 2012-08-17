@@ -24,7 +24,7 @@ namespace Components;
    * Container_View
    *
    * @package net.evalcode.components
-   * @subpackage db
+   * @subpackage db.container
    *
    * @since 1.0
    * @access public
@@ -33,10 +33,10 @@ namespace Components;
    * @copyright Copyright (C) 2012 evalcode.net
    * @license GNU General Public License 3
    */
-  class Container_View extends Container
+  class Container_View implements View
   {
     // CONSTRUCTION
-    public function __construct(Container $container_, array $filterConditions_=null)
+    public function __construct(Container $container_, array $filterConditions_=array())
     {
       $this->m_container=$container_;
       $this->m_filterConditions=$filterConditions_;
@@ -50,44 +50,53 @@ namespace Components;
       return $this->m_container;
     }
 
-    public function __get($name_)
+    public function count(array $conditions_=array())
     {
-      return $this->m_container->$name_;
+      return $this->m_container->count(Query::mergeConditions(
+        $conditions_, $this->m_filterConditions
+      ));
+    }
+
+    public function find(array $conditions_=array())
+    {
+      return $this->m_container->find(Query::mergeConditions(
+        $conditions_, $this->m_filterConditions
+      ));
+    }
+
+    public function findFirst(array $conditions_=array())
+    {
+      return $this->m_container->findFirst(Query::mergeConditions(
+        $conditions_, $this->m_filterConditions
+      ));
+    }
+
+    public function findByPk($primaryKey_)
+    {
+      return $this->m_container->findFirst(Query::mergeConditions(
+        array('select'=>array($this->m_container->primaryKey.' = ?', $primaryKey_)),
+        $this->m_filterConditions
+      ));
+    }
+
+    public function save(Record $record_)
+    {
+      // TODO Implement
+    }
+
+    public function delete(Record $record_)
+    {
+      // TODO Implement
     }
     //--------------------------------------------------------------------------
 
 
     // IMPLEMENTATION
+    private $m_filterConditions=array();
     /**
      * @var \Components\Container
      */
     private $m_container;
-    private $m_filterConditions;
-    //-----
-
-
-    protected function buildQueryString(array $conditions_)
-    {
-      $conditions=array();
-      foreach($conditions_ as $segmentType=>$segment)
-        $conditions[$segmentType]=static::{self::$m_queryStringSegmentProcessors[strtolower($segmentType)]}($segment);
-
-      if(isset($conditions['select']))
-        array_unshift($conditions, 'WHERE');
-
-      if(null!==$this->m_viewFilterConditions)
-      {
-        $viewFilterConditions=parent::buildQueryString($this->m_viewFilterConditions);
-
-        if(isset($conditions['select']))
-          $conditions['select']="$conditions[select] AND ($viewFilterConditions)";
-        else
-          $conditions['select']=$viewFilterConditions;
-      }
-
-      var_dump(implode(' ', $conditions));
-      return implode(' ', $conditions);
-    }
     //--------------------------------------------------------------------------
   }
 ?>
