@@ -23,6 +23,16 @@ namespace Components;
   /**
    * View
    *
+   * <p>
+   *   Public interface for (filtered) container access.
+   * </p>
+   *
+   * @todo Refactor/merge with type/Collection, type/Map.
+   * Build towards an unified interface for e.g. ui components to
+   * access collections/maps(arrays) and containers/views etc.
+   * Could make latest additions to ui component regarding databinding
+   * unneccessary.
+   *
    * @package net.evalcode.components
    * @subpackage db
    *
