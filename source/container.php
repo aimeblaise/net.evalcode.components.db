@@ -241,6 +241,7 @@ namespace Components;
 
     public function __call($name_, array $args_=array())
     {
+      // TODO Cache local
       if(isset($this->m_referenceContainerTypes[$name_]))
       {
         $referenceContainerType=$this->m_referenceContainerTypes[$name_];
