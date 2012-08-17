@@ -272,9 +272,9 @@ namespace Components;
     protected static $m_containerTypesByTable=array();
 
     private $m_foreignKeyColumnNames=array();
-    private $m_foreignKeyTableNames=array();
+    private $m_foreignKeyContainerTypes=array();
     private $m_referenceColumnNames=array();
-    private $m_referenceTableNames=array();
+    private $m_referenceContainerTypes=array();
     //--------------------------------------------------------------------------
   }
 ?>
