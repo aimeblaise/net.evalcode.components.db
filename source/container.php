@@ -110,8 +110,9 @@ namespace Components;
      */
     public static function get()
     {
+      $tableName=$type::TABLE_NAME;
       if(false===isset(self::$m_containersByType[$type]))
-        return static::{$type::TABLE_NAME}();
+        return static::$tableName();
 
       return self::$m_containersByType[$type];
     }
