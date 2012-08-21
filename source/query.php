@@ -52,11 +52,9 @@ namespace Components;
      */
     public static function buildQueryString(Container $container_, array $conditions_)
     {
-      $segmentProcessor=self::$m_queryStringSegmentProcessors[strtolower($segmentType)];
-
       $conditions=array();
       foreach($conditions_ as $segmentType=>$segment)
-        $conditions[$segmentType]=static::$segmentProcessor($container_, $segment);
+        $conditions[$segmentType]=static::{self::$m_queryStringSegmentProcessors[strtolower($segmentType)]}($container_, $segment);
 
       if(isset($conditions['select']))
         array_unshift($conditions, 'WHERE');
