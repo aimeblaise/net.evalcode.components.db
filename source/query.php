@@ -76,9 +76,9 @@ namespace Components;
             if('select'===$segmentType)
             {
               $conditions[$segmentType]=array_merge(
-                array("{$conditionsA_[0]} AND ({$conditionsB_[0]})"),
-                array_slice($conditionsA_, 1),
-                array_slice($conditionsB_, 1)
+                array("{$conditionsA_[$segmentType][0]} AND ({$conditionsB_[$segmentType][0]})"),
+                array_slice($conditionsA_[$segmentType], 1),
+                array_slice($conditionsB_[$segmentType], 1)
               );
             }
             else
