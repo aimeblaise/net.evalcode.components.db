@@ -160,9 +160,7 @@ namespace Components;
      */
     public function escape($value_)
     {
-      // TODO Delegate to connection/driver/backend ...
-
-      return $value_;
+      return $this->connection->getEscaped($value_);
     }
 
     /**

@@ -127,12 +127,9 @@ namespace Components;
           );
         }
 
-        $statement=
-          substr($statement, 0, $pos).
-          '\''.
-          $container_->escape($argument).
-          '\''.
-          substr($statement, $pos+1);
+        $statement=substr($statement, 0, $pos)
+          .self::escape($container_, $argument)
+          .substr($statement, $pos+1);
       }
 
       return $statement;
@@ -167,6 +164,18 @@ namespace Components;
         $columns[$column=trim($column)]=$column;
 
       return sprintf('ORDER BY %1$s %2$s', implode(',', $columns), $order);
+    }
+
+    private static function escape($container_, $argument_)
+    {
+      if(true===$argument_)
+        return 1;
+      if(false===$argument_)
+        return 0;
+      if(is_integer($argument_))
+        return $argument_;
+
+      return "'".$container_->escape($argument_)."'";
     }
     //--------------------------------------------------------------------------
   }
